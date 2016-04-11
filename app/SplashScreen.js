@@ -39,7 +39,8 @@ class SplashScreen extends React.Component {
         fetch(API_COVER_URL)
         .then((response) => response.json())
         .then((responseData) => {
-            console.log("componentDidMount: " + responseData);
+            console.log("SplashScreen componentDidMount:");
+            console.log(responseData);
             store.save(KEY_COVER, responseData);
         });
 
