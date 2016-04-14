@@ -13,8 +13,11 @@ var {
     ListView,
     Image,
     RefreshControl,
+    TouchableOpacity,
 } = React;
 var Store = require('react-native-simple-store');
+var AppThemeContent = require('./AppThemeContent');
+
 
 class AppTheme extends React.Component{
     constructor(props) {
@@ -41,7 +44,7 @@ class AppTheme extends React.Component{
                 //重新触发渲染
                 this.setState({theme: data});
             }
-        });
+        }).catch((error)=>{console.log(error);});
     }
 
     onRefresh() {
@@ -62,34 +65,46 @@ class AppTheme extends React.Component{
             this.setState({theme: responseData,
                 isRefreshing: false,
             });
+        }).catch((error)=>{
+            //捕获异常
+            console.log(error);
+        });
+    }
+
+    onPressItem(story){
+        console.log(story.title);
+        console.log(story.id);
+        this.props.navigator.push({
+            component: AppThemeContent,
+            name:'AppThemeContent',
+            storyid:story.id,
         });
     }
 
     renderItem(story){
-        return (
-            <View style={styles.containerItem}>
-                <Image
-                  style={{width: 88, height: 66, marginRight: 10}}
-                />
-                <View style={{flex: 1, flexDirection: 'column'}} >
-                  <Text style={styles.title}>
-                    {story.title}
-                  </Text>
-                  <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}} >
-                    <Text style={{fontSize: 14, color: '#aaaaaa', marginTop: 5}}>
-                      来自微信公众号：
-                    </Text>
-                    <Text style={{flex: 1, fontSize: 14, color: '#87CEFA', marginTop: 5, marginRight: 5}}>
+        {
+            return (
+                <TouchableOpacity onPress={this.onPressItem.bind(this, story)}>
+                    <View style={styles.containerItem}>
+                            <Image
+                              style={{width: 88, height: 66, marginRight: 10}}
+                              source={{uri: story.images?story.images[0]:null}}
+                            />
 
-                    </Text>
-                  </View>
-                </View>
-            </View>
-        );
+                        <View style={{flex: 1}} >
+                          <Text style={styles.title}>
+                            {story.title}
+                          </Text>
+                        </View>
+                    </View>
+                </TouchableOpacity>
+            );
+        }
     }
     render(){
         console.log("AppTheme render");
         if (this.state.theme == null) {
+            console.log("AppTheme render");
             return (
                 <ScrollView
                     automaticallyAdjustContentInsets={false}
@@ -117,7 +132,15 @@ class AppTheme extends React.Component{
         return (
             <ListView
               dataSource={this.state.dataSource.cloneWithRows(this.state.theme.stories)}
-              renderRow={this.renderItem}
+              renderRow={this.renderItem.bind(this)}
+              refreshControl={
+                <RefreshControl
+                  refreshing={this.state.isRefreshing}
+                  onRefresh={this.onRefresh.bind(this)}
+                  title="Loading..."
+                  colors={['#ffaa66cc', '#ff00ddff', '#ffffbb33', '#ffff4444']}
+                />
+              }
             >
             </ListView>
         );
@@ -134,12 +157,20 @@ var styles = StyleSheet.create({
     containerItem: {
       flex: 1,
       flexDirection: 'row',
+      height:90,
       justifyContent: 'center',
       alignItems: 'center',
       backgroundColor: '#fcfcfc',
       padding: 10,
       borderBottomColor: '#ddd',
-      borderBottomWidth: 1
+      borderBottomWidth: 1,
+      marginLeft:5,
+      marginRight:5,
+    },
+    title: {
+      fontSize: 18,
+      textAlign: 'left',
+      color: 'black'
     },
 });
 

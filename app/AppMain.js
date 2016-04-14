@@ -50,6 +50,8 @@ class AppMain extends React.Component {
 
                 //重新触发渲染
                 this.setState({themes: responseData});
+            }).catch((error)=>{
+                console.error(error);
             });
         });
     }
@@ -83,7 +85,7 @@ class AppMain extends React.Component {
                     key={this.state.themes.others[i].id}
                     tabLabel={this.state.themes.others[i].name}
                     style={{flex: 1}}>
-                    <AppTheme themeid={this.state.themes.others[i].id}>
+                    <AppTheme themeid={this.state.themes.others[i].id} navigator={this.props.navigator}>
                     </AppTheme>
                 </View>
             );
