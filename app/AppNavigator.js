@@ -10,8 +10,11 @@ var {
     Text,
     StatusBar,
     Navigator,
+    BackAndroid,
 } = React;
 var SplashScreen = require('./SplashScreen');
+var _navigator = null;
+var gEnterWebView = false;
 
 class AppNavigator extends React.Component {
     constructor(props) {
@@ -20,7 +23,24 @@ class AppNavigator extends React.Component {
         this.state = {
             component:SplashScreen,
             name:'SplashScreen',
+            storyid:null,
         };
+
+        //
+        this.goBack = this.goBack.bind(this);
+        BackAndroid.addEventListener('hardwareBackPress', this.goBack);
+    }
+
+    //返回键处理
+    goBack(){
+        if (_navigator && (gEnterWebView == true)) {
+            console.log("_navigator.pop");
+
+            gEnterWebView = false;
+            _navigator.pop();
+            return true;
+        }
+        return false;
     }
 
     //
@@ -31,6 +51,12 @@ class AppNavigator extends React.Component {
     //
     renderScene(route, navigator) {
       var Component = route.component;
+
+      _navigator = navigator;
+
+      if (route.name == 'AppThemeContent') {
+          gEnterWebView = true;
+      }
 
       return (
         <Component navigator={navigator} route={route} />
