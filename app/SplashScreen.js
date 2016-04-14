@@ -6,6 +6,7 @@ var {
     View,
     Text,
     Image,
+    Animated,
 } = React;
 
 var store = require('react-native-simple-store');
@@ -22,26 +23,42 @@ class SplashScreen extends React.Component {
 
         this.state = {
             responseData:null,
-            //bounceValue:new Animated.Value(1),
+            bounceValue:new Animated.Value(1),
         };
     }
 
     componentDidMount(){
+        //设置动画
+        this.state.bounceValue.setValue(1);
+        Animated.timing(
+          this.state.bounceValue,
+          {
+            toValue: 1.2,
+            duration: 5000,
+          }
+        ).start();
+
         //从存储中读取开机画面的json信息并触发重新渲染
         store.get(KEY_COVER)
         .then((cover)=>{
             console.log(cover);
             //重新触发渲染
             this.setState({responseData: cover});
-        }).done();
+        }).catch((error)=>{
+            console.error(error);
+        });
 
-        //从网络获取开机画面json信息
+        //从网络获取更新开机画面json信息
         fetch(API_COVER_URL)
         .then((response) => response.json())
         .then((responseData) => {
             console.log("SplashScreen componentDidMount:");
             console.log(responseData);
-            store.save(KEY_COVER, responseData);
+            store.save(KEY_COVER, responseData).catch((error)=>{
+                console.log(error);
+            });
+        }).catch((error)=>{
+            console.error(error);
         });
 
         //定时结束切换到主页面
@@ -54,28 +71,41 @@ class SplashScreen extends React.Component {
     }
 
     render(){
-        var img, text;
-        console.log("render: start");
-        if(this.state.responseData) {
-            img = {uri: this.state.responseData.img};
-            text = this.state.responseData.text;
-            console.log("render: img " + this.state.responseData.img);
+        if (this.state.responseData == null) {
+            return (
+                <View style={styles.container}>
+                    <Animated.Image
+                        source={require('image!splash')}
+                        style={{
+                            flex:1,
+                            width:Dimensions.get('window').width,
+                            transform:[
+                                {scale:this.state.bounceValue,}
+                            ],
+                        }}
+                    />
+                </View>
+            );
         }
         else {
-            //img = require('image!splash');
-            img = {uri: 'https://pic3.zhimg.com/2d16f25c61e0323babf2f8ff5eb94d9f.jpg'}
-            text = '';
+            return (
+                <View style={styles.container}>
+                    <Animated.Image
+                        source={{uri: this.state.responseData.img}}
+                        style={{
+                            flex:1,
+                            width:Dimensions.get('window').width,
+                            transform:[
+                                {scale:this.state.bounceValue,}
+                            ],
+                        }}
+                    />
+                    <Text style={styles.text}>
+                        {this.state.responseData.text}
+                    </Text>
+                </View>
+            );
         }
-        console.log("render: text " + text);
-
-        return (
-            <View style={styles.container}>
-                <Image
-                  style={{flex: 1, width: WINDOW_WIDTH, height: WINDOW_HEIGHT}}
-                  source={{uri: 'https://pic3.zhimg.com/2d16f25c61e0323babf2f8ff5eb94d9f.jpg'}}
-                />
-            </View>
-        );
     }
 }
 
